@@ -1,0 +1,185 @@
+{
+  "main": {
+    "id": "2cf8119b5fa90096",
+    "type": "split",
+    "children": [
+      {
+        "id": "dc8de371cddccc9f",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "8b5a9f2ac0877112",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Basic Docker Commands.md",
+                "mode": "source",
+                "source": false
+              }
+            }
+          },
+          {
+            "id": "94edb41921a19aab",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Basic Docker Commands.md",
+                "mode": "source",
+                "source": false
+              }
+            }
+          },
+          {
+            "id": "ba9eada752c1f0d0",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "3D Jet Simulation.md",
+                "mode": "source",
+                "source": false
+              }
+            }
+          }
+        ],
+        "currentTab": 2
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "ae8b4dee25a83c9b",
+    "type": "split",
+    "children": [
+      {
+        "id": "0ecedfc683284704",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "a4bbef627bcdda2c",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical"
+              }
+            }
+          },
+          {
+            "id": "906ba20167548dd4",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              }
+            }
+          },
+          {
+            "id": "462465f9d90403fb",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {}
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 416.5004348754883
+  },
+  "right": {
+    "id": "0258e4ccb7044296",
+    "type": "split",
+    "children": [
+      {
+        "id": "5328eb4459f112e9",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "24504ad742b941ce",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "3D Jet Simulation.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              }
+            }
+          },
+          {
+            "id": "9a7244dd6afe5079",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "3D Jet Simulation.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              }
+            }
+          },
+          {
+            "id": "f1f9757dda815f6e",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true
+              }
+            }
+          },
+          {
+            "id": "c232338f6a602983",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "3D Jet Simulation.md"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Open quick switcher": false,
+      "graph:Open graph view": false,
+      "canvas:Create new canvas": false,
+      "daily-notes:Open today's daily note": false,
+      "templates:Insert template": false,
+      "command-palette:Open command palette": false
+    }
+  },
+  "active": "ba9eada752c1f0d0",
+  "lastOpenFiles": [
+    "Basic Docker Commands.md",
+    "3D Jet Simulation.md",
+    "START HERE.md",
+    "Difference between running jet in docker vs compiled on VM.md",
+    "Building a Dockerfile.md",
+    "Docker Installation.md",
+    "HDF5 Install.md",
+    "Google Cloud.md"
+  ]
+}

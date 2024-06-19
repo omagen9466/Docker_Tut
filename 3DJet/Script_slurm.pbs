@@ -1,0 +1,25 @@
+#!/bin/bash
+#SBATCH --job-name=jet_560_mcells
+#SBATCH --nodes=6
+#SBATCH --ntasks-per-node=96
+#SBATCH --ntasks=512
+#SBATCH --cpus-per-task=1
+#SBATCH --time=24:00:00
+#SBATCH --output=log.athena
+
+module purge
+#module load gcc/gcc-12.1.0
+module load intel/parallel_studio_xe_2020.4
+module load hdf5/hdf5-1.14-intel-rocky
+
+dir=/kozaky_ssd/odienassar/Athena++/3D_sim/H2_air/Average/30atm
+
+#cd //kozaky_ssd/odienassar/athena_version4
+#make clean
+#python3 configure.py --prob jet_wedge -mpi --nghost 6 -hdf5 --hdf5_path /powerapps/share/rocky8/hdf5-1.14 --cxx icc --mpiccmd mpiicpc --nscalars 1
+#make all -j 20
+#cp bin/athena $dir
+
+cd $dir
+export LD_LIBRARY_PATH=/powerapps/share/intel/parallel_studio_2020.4_gay/compilers_and_libraries_2020.4.304/linux/mpi/intel64/libfabric/lib/prov:$LD_LIBRARY_PATH
+srun --mpi=pmix_v3 ./athena -i athinput.jet_wedge -d $dir

@@ -1,0 +1,12 @@
+{
+    "files.associations": {
+        "fstream": "cpp",
+        "*.ipp": "cpp",
+        "bit": "cpp",
+        "condition_variable": "cpp",
+        "new": "cpp",
+        "random": "cpp",
+        "iostream": "cpp",
+        "iosfwd": "cpp"
+    }
+}

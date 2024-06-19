@@ -1,0 +1,19 @@
+#PBS -l select=1:ncpus=96:mpiprocs=96:host=compute-0-12+1:ncpus=96:mpiprocs=96:host=compute-0-13+1:ncpus=96:mpiprocs=96:host=compute-0-14+1:ncpus=96:mpiprocs=96:host=compute-0-15+1:ncpus=96:mpiprocs=96:host=compute-0-16+1:ncpus=32:mpiprocs=32:host=compute-0-17
+#PBS -N  jet_560_mcells
+ 
+module purge
+#module load gcc/gcc-12.1.0
+module load intel/parallel_studio_xe_2020.4
+module load hdf5/hdf5-1.14-intel-rocky
+
+dir=/kozaky_ssd/odienassar/Athena++/3D_sim/H2_air/Average/30atm
+
+#cd //kozaky_ssd/odienassar/athena_version4
+#make clean
+#python3 configure.py --prob jet_wedge -mpi --nghost 6 -hdf5 --hdf5_path /powerapps/share/rocky8/hdf5-1.14 --cxx icc --mpiccmd mpiicpc --nscalars 1
+#make all -j 20
+#cp bin/athena $dir
+
+cd $dir
+export LD_LIBRARY_PATH=/powerapps/share/intel/parallel_studio_2020.4_gay/compilers_and_libraries_2020.4.304/linux/mpi/intel64/libfabric/lib/prov:$LD_LIBRARY_PATH
+mpiexec --hostfile ${PBS_NODEFILE} -n 512 ./athena -i athinput.jet_wedge -d $dir > log.athena

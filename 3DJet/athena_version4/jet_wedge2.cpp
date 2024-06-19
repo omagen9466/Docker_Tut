@@ -1,0 +1,379 @@
+//========================================================================================
+// Athena++ astrophysical MHD code
+// Copyright(C) 2014 James M. Stone <jmstone@princeton.edu> and other code contributors
+// Licensed under the 3-clause BSD License, see LICENSE file for details
+//========================================================================================
+//! \file jet.cpp
+//! \brief Sets up a nonrelativistic jet introduced through L-x1 boundary (left edge)
+//========================================================================================
+
+// C headers
+
+// C++ headers
+#include <cmath>      // sqrt()
+
+// Athena++ headers
+#include "../athena.hpp"
+#include "../athena_arrays.hpp"
+#include "../bvals/bvals.hpp"
+#include "../coordinates/coordinates.hpp"
+#include "../eos/eos.hpp"
+#include "../field/field.hpp"
+#include "../hydro/hydro.hpp"
+#include "../mesh/mesh.hpp"
+#include "../parameter_input.hpp"
+#include "../scalars/scalars.hpp"
+#include "../hydro/hydro_diffusion/hydro_diffusion.hpp"
+#include <random>
+
+
+// BCs on L-x1 (left edge) of grid with jet inflow conditions
+void JetInnerX2(MeshBlock *pmb, Coordinates *pco, AthenaArray<Real> &prim, FaceField &b,
+               Real time, Real dt,
+               int il, int iu, int jl, int ju, int kl, int ku, int ngh);
+
+
+// BCs on L-x1 (left edge) of grid with jet inflow conditions
+void JetInnerX2_2(MeshBlock *pmb, Coordinates *pco, AthenaArray<Real> &prim, FaceField &b,
+               Real time, Real dt,
+               int il, int iu, int jl, int ju, int kl, int ku, int ngh);
+
+namespace {
+// Make radius of jet and jet variables global so they can be accessed by BC functions
+Real d_amb, p_amb, vx_amb, vy_amb, vz_amb, bx_amb, by_amb, bz_amb, den, pres;
+Real r_jet, d_jet, p_jet, vx_jet, vy_jet, vz_jet, bx_jet, by_jet, bz_jet, wall_thick;
+Real x1_0, x2_0, x3_0, x_0, y_0, z_0, gm1;
+Real nuair, nu_h2;
+
+} // namespace
+
+void MeshBlock::InitUserMeshBlockData(ParameterInput *pin)
+{
+  AllocateUserOutputVariables(12);
+  SetUserOutputVariableName(0, "pressure");
+  SetUserOutputVariableName(1, "density");
+  SetUserOutputVariableName(2, "vx");
+  SetUserOutputVariableName(3, "vy");
+  SetUserOutputVariableName(4, "vz");
+  SetUserOutputVariableName(5, "temperature");
+  SetUserOutputVariableName(6, "mach");
+  SetUserOutputVariableName(7, "scalars");
+  SetUserOutputVariableName(8, "schlieren");
+  SetUserOutputVariableName(9, "Mean_vel");
+  SetUserOutputVariableName(10, "Mean_Y");
+  SetUserOutputVariableName(11, "Mean_dt");
+  return;
+  return;
+}
+
+int RefinementCondition(MeshBlock *pmb);
+
+//========================================================================================
+//! \fn void Mesh::InitUserMeshData(ParameterInput *pin)
+//  \brief Function to initialize problem-specific data in mesh class.  Can also be used
+//  to initialize variables which are global to (and therefore can be passed to) other
+//  functions in this file.  Called in Mesh constructor.
+//========================================================================================
+
+void Mesh::InitUserMeshData(ParameterInput *pin) {
+  // initialize global variables
+  d_amb  = pin->GetReal("problem", "d");
+  p_amb  = pin->GetReal("problem", "p");
+  vx_amb = pin->GetReal("problem", "vx");
+  vy_amb = pin->GetReal("problem", "vy");
+  vz_amb = pin->GetReal("problem", "vz");
+  
+  d_jet  = pin->GetReal("problem", "djet");
+  p_jet  = pin->GetReal("problem", "pjet");
+  vx_jet = pin->GetReal("problem", "vxjet");
+  vy_jet = pin->GetReal("problem", "vyjet");
+  vz_jet = pin->GetReal("problem", "vzjet");
+
+  r_jet = pin->GetReal("problem", "rjet");
+  wall_thick = pin->GetReal("problem", "wall_thick");
+
+  nuair = pin->GetReal("problem", "nuair");
+  nu_h2 = pin->GetReal("problem", "nu_h2");
+
+  // get coordinates of center of jet --cylindrical/wedge r, theta and z
+  // get coordinates of center of blast, and convert to Cartesian if necessary
+  x1_0   = 0.0; // pin->GetOrAddReal("problem", "x1_0", 0.0);
+  x2_0   = 0.0; // pin->GetOrAddReal("problem", "x2_0", 0.0);
+  x3_0   = 0.0; // pin->GetOrAddReal("problem", "x3_0", 0.0);
+
+
+
+  x_0 = x1_0*std::cos(x3_0);
+  y_0 = x2_0;
+  z_0 = x1_0*std::sin(x3_0);
+
+  // enroll boundary value function pointers
+  EnrollUserBoundaryFunction(BoundaryFace::inner_x2, JetInnerX2);
+
+
+  if(adaptive==true)
+      EnrollUserRefinementCondition(RefinementCondition);
+
+  return;
+}
+
+
+//----------------------------------------------------------------------------------------
+//! \fn void MeshBlock::ProblemGenerator(ParameterInput *pin)
+//  \brief Problem Generator for the Jet problem
+void MeshBlock::ProblemGenerator(ParameterInput *pin) {
+  gm1 = peos->GetGamma() - 1.0;
+  // initialize conserved variables
+  JetInnerX2_2(this,pcoord,phydro->w,pfield->b,pmy_mesh->time,pmy_mesh->dt,is,ie,js,je,ks,ke,NGHOST);
+/*  for (int k=ks; k<=ke; ++k) {
+    for (int j=js; j<=je; ++j) {
+      for (int i=is; i<=ie; ++i) 
+      {
+            phydro->u(IDN,k,j,i) = d_amb;
+            phydro->u(IM1,k,j,i) = d_amb*vx_amb;
+            phydro->u(IM2,k,j,i) = d_amb*vy_amb;
+            phydro->u(IM3,k,j,i) = d_amb*vz_amb;
+            phydro->u(IEN,k,j,i) = p_amb/gm1 + 0.5*d_amb*(SQR(vx_amb)+SQR(vy_amb)+SQR(vz_amb));
+            if (NSCALARS > 0){
+              pscalars->s(0, k, j, i) = 0.0;
+              pscalars->r(0, k, j, i) = 0.0;
+            }                                            
+      }
+    }
+  }
+  return;*/
+}
+
+void MeshBlock::UserWorkInLoop() {
+  for (int k = ks; k <= ke; ++k) {
+    for (int j = js; j <= je; ++j) {
+      for (int i = is; i <= ie; ++i) {
+        if (NSCALARS > 0) {
+          Real Y = pscalars->r(0, k, j, i); // Y is mass fraction H2/air
+          Real nu_fein = nuair + Y * (nu_h2 - nuair);
+          phydro->hdif.nu(0, k, j, i) = nu_fein;
+          
+
+          if (pmy_mesh->time >= 0.002){
+          phydro->U_mean(0,k, j, i) += pmy_mesh->dt*phydro->w(IVY,k,j,i) ; //mean velocity
+          phydro->U_mean(1,k, j, i) += pmy_mesh->dt*Y ; //mean Mass fraction
+          phydro->U_mean(2,k, j, i) += pmy_mesh->dt ; //mean time
+
+          }
+
+        }
+      }
+    }
+  }
+}
+
+//----------------------------------------------------------------------------------------
+//! \fn void JetInnerX1()
+//  \brief Sets boundary condition on left X boundary (iib) for jet problem
+
+void JetInnerX2_2(MeshBlock *pmb, Coordinates *pco, AthenaArray<Real> &prim, FaceField &b,
+                Real time, Real dt,
+                int il, int iu, int jl, int ju, int kl, int ku, int ngh) {
+  // set primitive variables in inlet ghost zones
+  for (int k=kl; k<=ku; ++k) {
+    for (int i=il; i<=iu; ++i) {
+      for (int j=1; j<=ngh; ++j) {
+ 
+        Real x = pco->x1v(i);
+        Real y = pco->x2v(j);
+        Real z = pco->x3v(k);
+        Real rad = std::sqrt(SQR(x - x_0) + SQR(z - z_0));  
+
+        if (rad <= r_jet) {
+
+          prim(IDN,k,jl-j,i) =  d_jet;
+          prim(IVX,k,jl-j,i) =  vx_jet; 
+          prim(IVY,k,jl-j,i) =  vy_jet; 
+          prim(IVZ,k,jl-j,i) =  vz_jet; 
+          prim(IPR,k,jl-j,i) =  p_jet;
+          if (NSCALARS > 0){
+            pmb->pscalars->s(0, k, j, i) = d_jet;
+            pmb->pscalars->r(0, k, j, i) = 1.0;
+          }
+        } else if (rad> r_jet && rad<= (r_jet+wall_thick))
+          {
+          prim(IDN,k,jl-j,i) = prim(IDN,k,jl,i);
+          prim(IVX,k,jl-j,i) = -prim(IVX,k,jl+j-1,i)+2*0.0;;
+          prim(IVY,k,jl-j,i) = -prim(IVY,k,jl+j-1,i)+2*0.0;
+          prim(IVZ,k,jl-j,i) = -prim(IVZ,k,jl+j-1,i)+2*0.0;
+          prim(IPR,k,jl-j,i) = prim(IPR,k,jl,i);
+          if (NSCALARS > 0){
+            pmb->pscalars->s(0, k,jl-j,i) = pmb->pscalars->s(0, k,jl,i);
+            pmb->pscalars->r(0, k,jl-j,i) = pmb->pscalars->r(0, k,jl,i);
+          }
+          } 
+          else {
+          prim(IDN,k,jl-j,i) = d_amb;
+          prim(IVX,k,jl-j,i) = vx_amb;
+          prim(IVY,k,jl-j,i) = vy_amb;
+          prim(IVZ,k,jl-j,i) = vz_amb;
+          prim(IPR,k,jl-j,i) = p_amb;
+          if (NSCALARS > 0){
+            pmb->pscalars->s(0, k,jl-j,i) = pmb->pscalars->s(0, k,jl,i);
+            pmb->pscalars->r(0, k,jl-j,i) = pmb->pscalars->r(0, k,jl,i);
+          }
+        }
+      }
+    }
+  }
+}
+
+
+//----------------------------------------------------------------------------------------
+//! \fn void JetInnerX1()
+//  \brief Sets boundary condition on left X boundary (iib) for jet problem
+
+void JetInnerX2(MeshBlock *pmb, Coordinates *pco, AthenaArray<Real> &prim, FaceField &b,
+                Real time, Real dt,
+                int il, int iu, int jl, int ju, int kl, int ku, int ngh) {
+  std::default_random_engine generator;
+  Real var = 3.33; 
+  std::normal_distribution<Real> distribution (0.0, var);
+  // set primitive variables in inlet ghost zones
+  for (int k=kl; k<=ku; ++k) {
+    for (int i=il; i<=iu; ++i) {
+      for (int j=1; j<=ngh; ++j) {
+ 
+        Real x = pco->x1v(i);
+        Real y = pco->x2v(j);
+        Real z = pco->x3v(k);
+        Real rad = std::sqrt(SQR(x - x_0) + SQR(z - z_0));  
+
+        if (rad <= r_jet) {
+
+          Real vx_random = distribution (generator);
+          Real vz_random = distribution (generator);
+          prim(IDN,k,jl-j,i) =  d_jet;
+          prim(IVX,k,jl-j,i) =  vx_jet+vx_random; 
+          prim(IVY,k,jl-j,i) =  vy_jet; 
+          prim(IVZ,k,jl-j,i) =  vz_jet+vz_random; 
+          prim(IPR,k,jl-j,i) =  p_jet;
+          if (NSCALARS > 0){
+            pmb->pscalars->s(0, k, j, i) = d_jet;
+            pmb->pscalars->r(0, k, j, i) = 1.0;
+          }
+        } else if (rad> r_jet && rad<= (r_jet+wall_thick))
+          {
+          prim(IDN,k,jl-j,i) = prim(IDN,k,jl,i);
+          prim(IVX,k,jl-j,i) = -prim(IVX,k,jl+j-1,i)+2*0.0;;
+          prim(IVY,k,jl-j,i) = -prim(IVY,k,jl+j-1,i)+2*0.0;
+          prim(IVZ,k,jl-j,i) = -prim(IVZ,k,jl+j-1,i)+2*0.0;
+          prim(IPR,k,jl-j,i) = prim(IPR,k,jl,i);
+          if (NSCALARS > 0){
+            pmb->pscalars->s(0, k,jl-j,i) = pmb->pscalars->s(0, k,jl,i);
+            pmb->pscalars->r(0, k,jl-j,i) = pmb->pscalars->r(0, k,jl,i);
+          }
+          } 
+          else {
+          prim(IDN,k,jl-j,i) = d_amb;
+          prim(IVX,k,jl-j,i) = vx_amb;
+          prim(IVY,k,jl-j,i) = vy_amb;
+          prim(IVZ,k,jl-j,i) = vz_amb;
+          prim(IPR,k,jl-j,i) = p_amb;
+          if (NSCALARS > 0){
+            pmb->pscalars->s(0, k,jl-j,i) = pmb->pscalars->s(0, k,jl,i);
+            pmb->pscalars->r(0, k,jl-j,i) = pmb->pscalars->r(0, k,jl,i);
+          }
+        }
+      }
+    }
+  }
+}
+
+
+//----------------------------------------------------------------------------------------
+//! \fn int RefinementCondition(MeshBlock *pmb)
+//! \brief refinement condition: maximum density and pressure curvature
+
+int RefinementCondition(MeshBlock *pmb) {
+  AthenaArray<Real> &w = pmb->phydro->w;
+  Real maxeps = 0.0;
+  int k = pmb->ks;
+  for (int j=pmb->js; j<=pmb->je; j++) {
+    for (int i=pmb->is; i<=pmb->ie; i++) {
+      Real epsr = (std::abs(w(IDN,k,j,i+1) - 2.0*w(IDN,k,j,i) + w(IDN,k,j,i-1))
+                  + std::abs(w(IDN,k,j+1,i) - 2.0*w(IDN,k,j,i) + w(IDN,k,j-1,i)))
+                  /w(IDN,k,j,i);
+      Real epsp = (std::abs(w(IPR,k,j,i+1) - 2.0*w(IPR,k,j,i) + w(IPR,k,j,i-1))
+                  + std::abs(w(IPR,k,j+1,i) - 2.0*w(IPR,k,j,i) + w(IPR,k,j-1,i)))
+                  /w(IPR,k,j,i);
+      Real eps = std::max(epsr, epsp);
+      maxeps = std::max(maxeps, eps);
+    }
+  }
+  // refine : curvature > 0.01
+  if (maxeps > 0.01) return 1;
+  // derefinement: curvature < 0.005
+  if (maxeps < 0.005) return -1;
+  // otherwise, stay
+  return 0;
+}
+
+
+void MeshBlock::UserWorkBeforeOutput(ParameterInput *pin)
+{
+  // AthenaArray<Real> vol_;
+
+  // vol_.NewAthenaArray((ie - is) + 2 * NGHOST + 1);
+
+  const bool f2 = pmy_mesh->f2;
+  const bool f3 = pmy_mesh->f3;
+
+  int il = is - 1;
+  int iu = ie + 1;
+  int jl, ju, kl, ku;
+  Real area_p1, area;
+  Real u_p1, u, v_p1, v;
+  Real u_cross_a_p1, u_cross_a;
+  Real v_cross_a_p1, v_cross_a;
+
+  Real d_inf = pin->GetReal("problem", "djet");
+  Real p_inf = pin->GetReal("problem", "pjet");
+  Real u_inf = pin->GetReal("problem", "vxjet");
+
+  if (!f2) // 1D
+    jl = js, ju = je, kl = ks, ku = ke;
+  else if (!f3) // 2D
+    jl = js - 1, ju = je + 1, kl = ks, ku = ke;
+  else // 3D
+    jl = js - 1, ju = je + 1, kl = ks - 1, ku = ke + 1;
+
+  for (int k = kl; k <= ku; ++k)
+  {
+    for (int j = jl; j <= ju; ++j)
+    {
+#pragma omp simd
+      for (int i = il; i <= iu; ++i)
+      {
+        user_out_var(0, k, j, i) = phydro->w(IPR, k, j, i);
+        user_out_var(1, k, j, i) = phydro->w(IDN, k, j, i);
+        user_out_var(2, k, j, i) = phydro->w(IVX, k, j, i);
+        user_out_var(3, k, j, i) = phydro->w(IVY, k, j, i);
+        user_out_var(4, k, j, i) = phydro->w(IVZ, k, j, i);
+        user_out_var(5, k, j, i) = phydro->w(IPR, k, j, i) / phydro->w(IDN, k, j, i) / 288.;
+        Real u2 = phydro->w(IVX, k, j, i) * phydro->w(IVX, k, j, i) + phydro->w(IVY, k, j, i) * phydro->w(IVY, k, j, i) + phydro->w(IVZ, k, j, i) * phydro->w(IVZ, k, j, i);
+        Real c2 = phydro->w(IPR, k, j, i) / phydro->w(IDN, k, j, i) * peos->GetGamma();
+        Real mach = sqrt(u2 / c2);
+        user_out_var(6, k, j, i) = mach;
+        if (NSCALARS > 0)
+          user_out_var(7, k, j, i) = pscalars->r(0, k, j, i);
+        Real den_x = 0, den_y = 0, den_z = 0;
+        den_x = (phydro->w(IDN, k, j, i + 1) - phydro->w(IDN, k, j, i - 1)) / pcoord->dx1v(i);
+        if (f2)
+          den_y = (phydro->w(IDN, k, j + 1, i) - phydro->w(IDN, k, j - 1, i)) / pcoord->dx2v(j);
+        if (f3)
+          den_z = (phydro->w(IDN, k + 1, j, i) - phydro->w(IDN, k - 1, j, i)) / pcoord->dx3v(k);
+        user_out_var(8, k, j, i) = sqrt(SQR(den_x) + SQR(den_y) + SQR(den_z)); // Schlieren image
+        user_out_var(9, k, j, i) = phydro->U_mean(0,k,j,i)/ phydro->U_mean(2,k,j,i); // 
+        user_out_var(10, k, j, i) = phydro->U_mean(1,k,j,i)/ phydro->U_mean(2,k,j,i); // Schlieren image
+        user_out_var(11, k, j, i) = phydro->U_mean(2,k,j,i);
+
+      }
+    }
+  }
+}

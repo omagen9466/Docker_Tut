@@ -1,0 +1,137 @@
+<comment>
+problem   = underdense Mach10 jet
+reference = 
+configure = --prob=jet_wedge 
+
+<job>
+problem_id = jet      # problem ID: basename of output filenames
+
+
+<output1>
+file_type  = hst      # History data dump
+dt         = 1e-09      # time increment between outputs
+
+#<output2>
+#file_type  = hdf5      # Binary data dump
+#variable   = prim     # variables to be output
+#dt         = 1e-05      # time increment between outputs
+
+#<output2>
+#file_type  = hdf5      # Binary data dump
+#variable   = user_out_var     # variables to be output
+#dt         = 1e-05      # time increment between outputs
+
+<output2>
+file_type   = hdf5       # VTK data dump
+variable    = user_out_var      # variables to be output
+dt          = 1e-07      # time interval between outputs
+x3_slice    = 0.0       # slicing at z=0.0
+ghost_zones = 6         # include ghost zones
+
+<output3>
+file_type   = hdf5	 # VTK data dump
+variable    = user_out_var # variables to be output
+dt          = 1.6e-05	 # time interval between outputs
+x2_slice    = 0.009       # slicing at z=0.0
+
+<output4>
+file_type   = hdf5	 # VTK data dump
+variable    = user_out_var # variables to be output
+dt          = 1.6e-05	 # time interval between outputs
+x2_slice    = 0.018       # slicing at z=0.0
+
+
+<output5>
+file_type   = hdf5	 # VTK data dump
+variable    = user_out_var # variables to be output
+dt          = 1.6e-05	 # time interval between outputs
+x2_slice    = 0.027       # slicing at z=0.0
+
+<output6>
+file_type   = hdf5	 # VTK data dump
+variable    = user_out_var # variables to be output
+dt          = 1.6e-05	 # time interval between outputs
+x2_slice    = 0.036       # slicing at z=0.0
+
+
+<time>
+cfl_number = 0.4      # The Courant, Friedrichs, & Lewy (CFL) Number
+nlim       = -1       # cycle limit
+tlim       = 0.000128    # time limit
+integrator  = rk3       # time integration algorithm
+xorder      = 3        # order of spatial reconstruction
+ncycle_out  = 1         # interval for stdout summary info
+dt_init = 1e-08
+
+<mesh>
+nx1        = 1024      # Number of zones in X1-direction
+x1min      = -0.075      # minimum value of X1
+x1max      = 0.075 maximum value of X1
+ix1_bc     = outflow     # inner-X1 boundary flag
+ox1_bc     = outflow  # outer-X1 boundary flag
+
+nx2        =512      # Number of zones in X2-direction
+x2min      = 0    # minimum value of X2
+x2max      = 0.075     # maximum value of X2
+ix2_bc     = user  # inner-X2 boundary flag
+ox2_bc     = outflow  # outer-X2 boundary flag
+
+nx3        = 1024        # Number of zones in X3-direction
+x3min      = -0.075   # minimum value of X3
+x3max      = 0.075     # maximum value of X3
+ix3_bc     = outflow  # inner-X3 boundary flag
+ox3_bc     = outflow  # outer-X3 boundary flag
+
+#refinement     = adaptive
+#numlevel       = 4
+#derefine_count    = 5
+
+#refinement = static
+
+#<refinement1>
+#x1min =  0
+#x1max = 0.2
+#x2min =  -0.1
+#x2max =  0.1
+#x3min = -1
+#x3max =  1
+#level = 2
+
+<meshblock>
+nx1 = 64
+nx2 = 64
+nx3 = 64
+
+<hydro>
+gamma   = 1.4     # gamma = C_p/C_v
+
+<problem>
+d  = 1.184
+p  = 101325
+vx = 0.0
+vy = 0.0
+vz = 0.0
+bx = 0.0
+by = 0.0
+bz = 0.0
+
+djet = 1.56
+pjet = 1604988
+vxjet = 0.0
+vyjet = 1198
+vzjet = 0.0 
+bxjet = 0.0
+byjet = 0.0
+bzjet = 0.0
+
+rjet = 0.0015
+
+Mwfuel=0.002
+Mwair=0.02896
+
+
+nu_iso=1.687e-05
+nuair=1.687e-05
+nu_h2=0.8e-05
+
+N_steps=960
