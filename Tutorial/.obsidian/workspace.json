@@ -13,7 +13,31 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Basic Docker Commands.md",
+                "file": "START HERE.md",
+                "mode": "source",
+                "source": false
+              }
+            }
+          },
+          {
+            "id": "562014eaed0d8aa0",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Example Slurm Script.md",
+                "mode": "source",
+                "source": false
+              }
+            }
+          },
+          {
+            "id": "665cd700dcad64e3",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Slurm Controlling a submitted job.md",
                 "mode": "source",
                 "source": false
               }
@@ -37,14 +61,14 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "3D Jet Simulation.md",
+                "file": "Basic Docker Commands.md",
                 "mode": "source",
                 "source": false
               }
             }
           }
         ],
-        "currentTab": 2
+        "currentTab": 1
       }
     ],
     "direction": "vertical"
@@ -94,7 +118,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 416.5004348754883
+    "width": 200
   },
   "right": {
     "id": "0258e4ccb7044296",
@@ -110,7 +134,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "3D Jet Simulation.md",
+                "file": "Example Slurm Script.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -127,7 +151,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "3D Jet Simulation.md",
+                "file": "Example Slurm Script.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -150,7 +174,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "3D Jet Simulation.md"
+                "file": "Example Slurm Script.md"
               }
             }
           }
@@ -171,15 +195,18 @@
       "command-palette:Open command palette": false
     }
   },
-  "active": "ba9eada752c1f0d0",
+  "active": "562014eaed0d8aa0",
   "lastOpenFiles": [
-    "Basic Docker Commands.md",
-    "3D Jet Simulation.md",
-    "START HERE.md",
-    "Difference between running jet in docker vs compiled on VM.md",
-    "Building a Dockerfile.md",
-    "Docker Installation.md",
+    "Slurm Controlling a submitted job.md",
     "HDF5 Install.md",
-    "Google Cloud.md"
+    "Google Cloud.md",
+    "Example Slurm Script.md",
+    "slurm_jobsubmission.pdf",
+    "START HERE.md",
+    "Docker Installation.md",
+    "Basic Docker Commands.md",
+    "Building a Dockerfile.md",
+    "Difference between running jet in docker vs compiled on VM.md",
+    "3D Jet Simulation.md"
   ]
 }

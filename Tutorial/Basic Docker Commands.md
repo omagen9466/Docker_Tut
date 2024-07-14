@@ -48,3 +48,14 @@ python3 configure.py --prob jet -mpi -hdf5 --hdf5_path=/home/admina/Software
 ```
 export LD_LIBRARY_PATH=/usr/local/hdf5-install/lib/:$LD_LIBRARY_PATH
 ```
+
+FOR DAUDE:
+
+```
+python3 configure.py --prob water_air_shock_mixure  -mpi -hdf5 -h5double --hdf5_path /home/admina/Software  --nghost 6 --nscalars 5 --nprimitive_scalars 5 -mixture_model  -multi_materials 
+```
+
+```
+python3 configure.py --prob water_air_shock_mixurev2  -mpi -hdf5 -h5double --hdf5_path /home/admina/Software  --nghost 6 --nscalars 5 --nprimitive_scalars 5  -multi_materials --eos general/ideal
+```
+

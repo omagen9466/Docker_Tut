@@ -24,7 +24,8 @@ RUN cd /tmp                                                                     
     make install  
 # creating athena folder in the contained and cd into it
 WORKDIR /usr/app/Sim/athena
-
+# wget http://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.14/hdf5-1.14.0/src/hdf5-1.14.0.tar
+# tar -xvf hdf5-1.14.0.tar --directory /usr/local/src  
 # cp the athena code from local machine to the container dir. NOTE: athena source is located in same dir as the Dockerfile 
 ADD athena_version4 .
 
